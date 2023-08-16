@@ -29,7 +29,7 @@ def predict(fcs, y):
     for sub in allsubs:
         
         # generate subject indices for implementing leave-one-out cross-validation
-        trainsubs = allsubs[np.arange(allsubs) !=sub]
+        trainsubs = allsubs[allsubs !=sub]
         
         # compute predictor variable ("strength")
         strength = np.zeros(len(allsubs))
