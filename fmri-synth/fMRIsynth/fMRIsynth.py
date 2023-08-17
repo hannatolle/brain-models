@@ -17,9 +17,8 @@ def synthesize_subjects(FC, SC, n, t,
          are functional connectivity values of triangular FC matrix without diagonal
          and columns are subjects
          
-    SC : 3d nd array 
-         structural connectivity matrices of multiple subjects
-         subjects are on axis=2
+    SC : list of 2d nd arrays
+         list with structural connectivity matrices for each subject
          
     n : int
         number of subjects
@@ -56,6 +55,7 @@ def synthesize_subjects(FC, SC, n, t,
     fitted_model_loss = np.zeros(FC.shape[1])
     fitted_model_G = np.zeros(FC.shape[1])
     for sub in range(FC.shape[1]):
+        params['C'] = SC[sub]
         model = BrainModel(**params)
         model.fit(FC[:, sub].flatten(), ms=ms, init_points=init_points, n_iter=n_iter)
         fitted_model_loss[sub] = model.get_loss()
@@ -68,12 +68,12 @@ def synthesize_subjects(FC, SC, n, t,
         ax0.hist(fitted_model_G)
         ax0.set_xlabel('G')
         ax0.set_ylabel('count')
-        ax0.title(f"mean = {np.mean(fitted_model_G)}, std = {np.std(fitted_model_G)}")
+        ax0.set_title(f"mean = {np.mean(fitted_model_G)}, std = {np.std(fitted_model_G)}")
         # loss histogram
         ax1.hist(fitted_model_loss)
         ax1.set_xlabel('loss')
         ax1.set_ylabel('count')
-        ax1.title(f"mean = {np.mean(fitted_model_loss)}, std = {np.std(fitted_model_loss)}")
+        ax1.set_title(f"mean = {np.mean(fitted_model_loss)}, std = {np.std(fitted_model_loss)}")
         # G versus loss scatterplot
         ax2.scatter(fitted_model_G, fitted_model_loss)
         ax2.set_xlabel('G')

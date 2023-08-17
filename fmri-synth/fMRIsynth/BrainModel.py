@@ -5,10 +5,9 @@ class BrainModel():
     
     def __init__(self, **kwargs):
         # FastDMF attributes
-        params = dmf.default_params(**kwargs)
-        for k, v in params.items():
-            setattr(self, k, v)
-            
+        params = kwargs.get('params', {})
+        self.params = dmf.default_params(**params)
+        
         # additional attributes
         self.pbounds = kwargs.get('pbounds', {'G': [0.1, 5]}) # bounds of all free model parameters as dict
         self._loss = np.inf 
@@ -16,13 +15,18 @@ class BrainModel():
     def get_loss(self):
         return self._loss
     
-    def run(self, ms):
+    def run(self, ms, G=[]):
         """
         Returns 2d array of synthetic BOLD data where rows=seconds and cols=brain regions.
         """
-        return dmf.run(self.__dict__, ms)
+        if G:
+            return dmf.run(self.params, ms)
+        else:
+            params = self.params
+            params['G'] = G
+            return dmf.run(params, ms)
             
-    def utility(self, empirical_FC, ms = 120000):
+    def utility(self, empirical_FC, G=[], ms = 120000):
         """ 
         Computes negative loss of DMF whole-brain model fit to empirical functioncal connectivity data.
 
@@ -31,6 +35,10 @@ class BrainModel():
         empirical_FC : 0D array
                        vectorized lower/ upper triangular empirical functional connectivity matrix
                        should NOT contain self-correlation values of regional timeseries with themselves
+        
+        G : float
+            global coupling parameter G
+            if given, model will run with a different G parameter than self.params['G']
 
         ms : int
              number of milisecond time steps of bold data to be synthesized for fitting
@@ -43,7 +51,7 @@ class BrainModel():
         """
 
         # simulate BOLD data
-        bold = self.run(ms)
+        bold = self.run(ms, G=G)
 
         # get functional connectivity of unique pairs of model-brain regions
         FC_measure = ConnectivityMeasure(kind='correlation', vectorize=True, discard_diagonal=True)
@@ -66,7 +74,7 @@ class BrainModel():
         empirical_FC : 0D array
                        vectorized lower/ upper triangular empirical functional connectivity matrix
                        should NOT contain self-correlation values of regional timeseries with themselves
-
+                       
         ms : int
              number of milisecond time steps of bold data to be synthesized for fitting
              
@@ -81,6 +89,6 @@ class BrainModel():
         optimizer.maximize(init_points = init_points, n_iter = n_iter)
         
         # update model parameter and loss
-        self.G = optimizer.max['params']['G']
+        self.params['G'] = optimizer.max['params']['G']
         self._loss = optimizer.max['target']
 
