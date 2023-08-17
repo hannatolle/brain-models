@@ -1,0 +1,6 @@
+python == 3.6
+numpy == 1.18.0
+fastdmf
+ks_metric
+nilearn
+BayesianOptimization

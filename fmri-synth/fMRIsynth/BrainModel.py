@@ -1,10 +1,3 @@
-# this needs to be run in an environment with Python 3.6
-
-import fastdmf as dmf
-import numpy as np
-from bayes_opt import BayesianOptimization, UtilityFunction
-from nilearn.connectome import ConnectivityMeasure
-
 class BrainModel():
     """
     Whole-brain model class. As of yet, BrainModel is a DMF whole-brain model as per FastDMF.

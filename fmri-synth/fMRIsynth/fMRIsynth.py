@@ -1,6 +1,4 @@
 import BrainModel
-import matplotlib.pyplot as plt
-import numpy as np
 
 def synthesize_subjects(FC, SC, n, t, 
                         params={'TR': 0.72}, 
