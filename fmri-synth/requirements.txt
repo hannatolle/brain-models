@@ -1,4 +1,4 @@
-python == 3.6
+python == 3.6.15
 numpy == 1.18.0
 fastdmf
 ks_metric

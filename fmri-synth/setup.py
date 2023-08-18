@@ -20,7 +20,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering"
     ],
-    python_requires='==3.6',
+    python_requires='==3.6.15',
     install_requires=["numpy==1.18.0"]
 )
     
