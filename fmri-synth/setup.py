@@ -1,12 +1,27 @@
+from setuptools import setup, find_packages
 
-setup(name             = 'fMRIsynth',
-      version          = '0.0.1',
-      description      = 'tools for augmenting fMRI datasets with synthetic data from brain simulations',
-      author           = 'Hanna M. Tolle, Diana Perez',
-      author_email     = 'hanna.m.tolle@gmail.com, dianacperezrivera@gmail.com',
-      url              = 'https://github.com/hannatolle/brain-models/fMRIsynth',
-      long_description = open('../README.md').read(),
-      install_requires = ['numpy==1.18.0'],
-      packages         = ['fastdmf', 'ks_metric', 'nilearn', 'BayesianOptimization'])
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+setup(
+    name="fMRIsynth",
+    version="0.0.1",
+    author="Hanna M. Tolle, Diana Perez",
+    author_email="hanna.m.tolle@gmail.com, dianacperezrivera@gmail.com",
+    description="synthesizing fMRI timeseries data using brain models",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/hannatolle/brain-models",
+    packages=find_packages(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD-3 License",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering"
+    ],
+    python_requires='==3.6',
+    install_requires=["numpy==1.18.0"]
+)
     
 
