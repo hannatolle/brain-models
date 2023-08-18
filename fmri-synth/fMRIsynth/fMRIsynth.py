@@ -1,4 +1,4 @@
-import BrainModel
+from .BrainModel import BrainModel
 
 def synthesize_subjects(FC, SC, n, t, 
                         params={'TR': 0.72}, 
