@@ -127,7 +127,7 @@ class BrainModel():
                    distributions of synthesized versus empirical data
         """
         # make clone
-        clone = BrainModel(**self.__dict__)
+        clone = BrainModel(**self.params)
         # change G
         clone.params['G'] = G
         # evaluate clone
