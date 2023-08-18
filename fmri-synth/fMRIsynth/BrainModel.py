@@ -9,17 +9,62 @@ class BrainModel():
         self.params = dmf.default_params(**params)
         
         # additional attributes
-        self.pbounds = kwargs.get('pbounds', {'G': [0.1, 5]}) # bounds of all free model parameters as dict
+        self.pbounds = kwargs.get('pbounds', {'G': [0.01, 5]}) # bounds of all free model parameters as dict
         self._loss = np.inf 
         
     def get_loss(self):
         return self._loss
     
+    def set_G(self, G):
+        self.params['G'] = G
+        
+    def get_G(self):
+        return self.params['G']
+    
     def run(self, ms):
         """
-        Returns 2d array of synthetic BOLD data where rows=brain regions and cols=time steps (sec).
+        Returns 2d array of synthetic BOLD data where rows=seconds and cols=brain regions.
         """
         return dmf.run(self.params, ms)
+    
+    def testrun(self, ms, G=[], plots=[1, 1]):
+        """
+        synthesizes data and plots BOLD and FC connectivity matrix.
+        """
+        # set G 
+        if G:
+            original_G = self.get_G()
+            self.set_G(G)
+            
+        # simulate data
+        bold = self.run(ms)
+
+        # plot synthetic BOLD data
+        if plots[0] > 0:
+            fig, ax = plt.subplots()
+            im = ax.imshow(bold.transpose())
+            ax.set_ylabel('time (s)');
+            ax.set_xlabel('brain regions');
+            ax.set_title(f"synthetic BOLD data; G = {np.round(self.get_G(), 3)}");
+            plt.colorbar(im, fraction=0.03, pad=0.03);
+            plt.show()
+
+        if plots[1] > 0:
+            # compute and plot FC
+            conn_measure = ConnectivityMeasure(kind='correlation', vectorize=False, discard_diagonal=False)
+            FC = conn_measure.fit_transform([bold.transpose()]).squeeze()
+            np.fill_diagonal(FC, 0)
+
+            fig, ax = plt.subplots();
+            scaling = np.max(FC) if np.max(FC)>(-np.min(FC)) else (-np.min(FC))
+            im = plotting.plot_matrix(FC, vmax=scaling, vmin=-scaling, colorbar=False, axes=ax);
+            plt.colorbar(im, fraction=0.05, pad=0.03);
+            ax.set_title(f"synthetic FC; G = {np.round(self.get_G(), 3)}");
+            plt.show()
+            
+        # set G back to original value    
+        if G:
+            self.set_G(original_G)
             
     def utility(self, empirical_FC, ms = 120000):
         """ 
@@ -30,19 +75,15 @@ class BrainModel():
         empirical_FC : 0D array
                        vectorized lower/ upper triangular empirical functional connectivity matrix
                        should NOT contain self-correlation values of regional timeseries with themselves
-        
-        G : float
-            global coupling parameter G
-            if given, model will run with a different G parameter than self.params['G']
 
         ms : int
              number of milisecond time steps of bold data to be synthesized for fitting
 
         Returns
         -------
-        ks_dist : float
-                  negative ks-distance between functional connectivity value 
-                  distributions of synthesized versus empirical data
+        -ks-dist : float
+                   negative ks-distance between functional connectivity value 
+                   distributions of synthesized versus empirical data
         """
 
         # simulate BOLD data
@@ -63,26 +104,24 @@ class BrainModel():
     
     def _evaluate_clone(self, empirical_FC, G, ms = 120000):
         """
-        Evaluates the fit of a clone BrainModel with same parameters as self except for G.
+        Runs and evaluates a clone of self with different G parameter.
         
         Parameters
         ----------
         empirical_FC : 0D array
                        vectorized lower/ upper triangular empirical functional connectivity matrix
                        should NOT contain self-correlation values of regional timeseries with themselves
-        
         G : float
             global coupling parameter G
-            if given, model will run with a different G parameter than self.params['G']
 
         ms : int
              number of milisecond time steps of bold data to be synthesized for fitting
-
+             
         Returns
         -------
-        result : float
-                 negative ks-distance between functional connectivity value 
-                 distributions of synthesized versus empirical data
+        -ks_dist : float
+                   negative ks-distance between functional connectivity value 
+                   distributions of synthesized versus empirical data
         """
         # make clone
         clone = BrainModel(**self.__dict__)
@@ -112,12 +151,10 @@ class BrainModel():
                  number of iterations
         """
         # create BayesianOptimization optimizer and maximize utility
-        # lambda x: x if x > threshold_value else 0
         optimizer = BayesianOptimization(f = lambda G: self._evaluate_clone(empirical_FC, G, ms=ms), 
                                          pbounds = self.pbounds)
         optimizer.maximize(init_points = init_points, n_iter = n_iter)
         
         # update model parameter and loss
-        self.params['G'] = optimizer.max['params']['G']
+        self.set_G(optimizer.max['params']['G'])
         self._loss = optimizer.max['target']
-
