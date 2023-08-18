@@ -4,9 +4,12 @@ class BrainModel():
     """
     
     def __init__(self, **kwargs):
-        # FastDMF attributes
-        params = kwargs.get('params', {})
-        self.params = dmf.default_params(**params)
+        # set FastDMF default attributes
+        self.params = dmf.default_params()
+        
+        # override defaults with user inputs
+        for k,v in kwargs.items():
+            if k in self.params: self.params[k] = v
         
         # additional attributes
         self.pbounds = kwargs.get('pbounds', {'G': [0.01, 5]}) # bounds of all free model parameters as dict
