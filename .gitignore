@@ -1,3 +1,6 @@
 .ipynb_checkpoints/
 Untitled.ipynb
 cpm/.ipynb_checkpoints
+cpm_wrapper.ipynb
+fMRIsynth-prepenv.sh
+external/
