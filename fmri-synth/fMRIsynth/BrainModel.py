@@ -4,6 +4,7 @@ import fastdmf as dmf
 from ks_metric import ks_score
 from bayes_opt import BayesianOptimization, UtilityFunction
 from nilearn.connectome import ConnectivityMeasure
+from nilearn import plotting
 
 class BrainModel():
     """
